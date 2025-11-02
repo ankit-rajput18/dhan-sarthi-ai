@@ -11,6 +11,7 @@ import LoanAnalyzer from "./pages/LoanAnalyzer";
 import TaxTips from "./pages/TaxTips";
 import ExpenseCalendar from "./pages/ExpenseCalendar";
 import AIMentor from "./pages/AIMentor";
+import Transactions from "./pages/Transactions";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -41,6 +42,7 @@ const App = () => (
                   <Route path="/tax-tips" element={<TaxTips />} />
                   <Route path="/calendar" element={<ExpenseCalendar />} />
                   <Route path="/ai-mentor" element={<AIMentor />} />
+                  <Route path="/transactions" element={<Transactions />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </DashboardLayout>

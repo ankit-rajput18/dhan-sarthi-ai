@@ -306,10 +306,8 @@ const LoanAnalyzer = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="mobile-heading font-bold">Loan Analyzer</h1>
-          <p className="mobile-body text-muted-foreground">
-            Manage your loans and optimize EMI payments
-          </p>
+          <h1 className="text-3xl font-bold">Loan Analyzer</h1>
+          <p className="text-muted-foreground">Manage your loans and optimize EMI payments</p>
         </div>
         <Dialog open={showAddLoan} onOpenChange={setShowAddLoan}>
           <DialogTrigger asChild>
@@ -331,7 +329,7 @@ const LoanAnalyzer = () => {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="type">Loan Type</Label>
                   <Select
@@ -379,9 +377,7 @@ const LoanAnalyzer = () => {
                     required
                   />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="interestRate">Interest Rate (%)</Label>
                   <Input
@@ -446,57 +442,58 @@ const LoanAnalyzer = () => {
         </AlertDescription>
       </Alert>
 
-      <div className="space-y-6">
-        {/* Summary Cards */}
-        <div className="grid md:grid-cols-3 gap-4">
-          <Card className="shadow-card border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Total EMI</p>
-                  <p className="text-2xl font-bold text-danger">
-                    ₹{totalEMI.toLocaleString()}
-                  </p>
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left Column - Summary & Analysis */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="shadow-card border-0">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total EMI</p>
+                    <p className="text-2xl font-bold text-danger">
+                      ₹{totalEMI.toLocaleString()}
+                    </p>
+                  </div>
+                  <Calculator className="w-8 h-8 text-danger" />
                 </div>
-                <Calculator className="w-8 h-8 text-danger" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card className="shadow-card border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    EMI to Income
-                  </p>
-                  <p className="text-2xl font-bold text-warning">
-                    {emiToIncomeRatio.toFixed(1)}%
-                  </p>
+            <Card className="shadow-card border-0">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      EMI to Income
+                    </p>
+                    <p className="text-2xl font-bold text-warning">
+                      {emiToIncomeRatio.toFixed(1)}%
+                    </p>
+                  </div>
+                  <PieChart className="w-8 h-8 text-warning" />
                 </div>
-                <PieChart className="w-8 h-8 text-warning" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card className="shadow-card border-0">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Active Loans
-                  </p>
-                  <p className="text-2xl font-bold text-primary">
-                    {loans.length}
-                  </p>
+            <Card className="shadow-card border-0">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      Active Loans
+                    </p>
+                    <p className="text-2xl font-bold text-primary">
+                      {loans.length}
+                    </p>
+                  </div>
+                  <CreditCard className="w-8 h-8 text-primary" />
                 </div>
-                <CreditCard className="w-8 h-8 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* EMI Analysis */}
           <Card className="shadow-card border-0">
             <CardHeader>
@@ -547,6 +544,127 @@ const LoanAnalyzer = () => {
             </CardContent>
           </Card>
 
+          {/* Loan Cards */}
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold">Your Loans</h3>
+            {loans.map((loan) => (
+              <Card key={loan.id} className="shadow-card border-0">
+                <CardContent className="p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-10 h-10 rounded-lg ${loan.color} flex items-center justify-center`}
+                      >
+                        <loan.icon className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold">{loan.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Next EMI:{" "}
+                          {new Date(loan.nextDueDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="outline">{loan.interestRate}% p.a.</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">EMI Amount</p>
+                      <p className="font-semibold text-lg">
+                        ₹{loan.emiAmount.toLocaleString()}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Outstanding</p>
+                      <p className="font-semibold text-lg">
+                        ₹{(loan.remainingBalance / 100000).toFixed(1)}L
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Remaining Tenure
+                      </p>
+                      <p className="font-semibold text-lg">
+                        {loan.remainingTenure} months
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Interest</p>
+                      <p className="font-semibold text-lg">
+                        ₹{((loan.totalInterest ?? calculateTotalInterest(loan.principal, loan.interestRate, loan.tenure)) / 100000).toFixed(1)}L
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>
+                        Paid: ₹
+                        {(
+                          (loan.principal - loan.remainingBalance) /
+                          100000
+                        ).toFixed(1)}
+                        L
+                      </span>
+                      <span>Total: ₹{(loan.principal / 100000).toFixed(1)}L</span>
+                    </div>
+                    <Progress
+                      value={
+                        ((loan.principal - loan.remainingBalance) /
+                          loan.principal) *
+                        100
+                      }
+                      className="h-2"
+                    />
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedLoan(loan);
+                        setShowLoanDetails(true);
+                      }}
+                    >
+                      View Details
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedLoan(loan);
+                        setShowPaymentLogs(true);
+                      }}
+                    >
+                      <FileText className="w-4 h-4 mr-1" />
+                      Logs
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditLoan(loan)}
+                    >
+                      <Edit className="w-4 h-4 mr-1" /> Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600"
+                      onClick={() => deleteLoan(loan.id)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" /> Delete
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Right Column - Quick Tips */}
+        <div className="space-y-6">
           {/* Quick Tips */}
           <Card className="shadow-card border-0">
             <CardHeader>
@@ -587,125 +705,43 @@ const LoanAnalyzer = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
 
-      {/* Loan Cards */}
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Your Loans</h3>
-        {loans.map((loan) => (
-          <Card key={loan.id} className="shadow-card border-0">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-lg ${loan.color} flex items-center justify-center`}
-                  >
-                    <loan.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">{loan.name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Next EMI:{" "}
-                      {new Date(loan.nextDueDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                <Badge variant="outline">{loan.interestRate}% p.a.</Badge>
-              </div>
-
-              <div className="grid md:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">EMI Amount</p>
-                  <p className="font-semibold text-lg">
-                    ₹{loan.emiAmount.toLocaleString()}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Outstanding</p>
-                  <p className="font-semibold text-lg">
-                    ₹{(loan.remainingBalance / 100000).toFixed(1)}L
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    Remaining Tenure
-                  </p>
-                  <p className="font-semibold text-lg">
-                    {loan.remainingTenure} months
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Interest</p>
-                  <p className="font-semibold text-lg">
-                    ₹{((loan.totalInterest ?? calculateTotalInterest(loan.principal, loan.interestRate, loan.tenure)) / 100000).toFixed(1)}L
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>
-                    Paid: ₹
-                    {(
-                      (loan.principal - loan.remainingBalance) /
-                      100000
-                    ).toFixed(1)}
-                    L
+          {/* Loan Summary Preview */}
+          <Card className="shadow-card border-0">
+            <CardHeader>
+              <CardTitle>Loan Summary</CardTitle>
+              <CardDescription>Overview of your loan portfolio</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm">Total Principal</span>
+                  <span className="font-medium">
+                    ₹{loans.reduce((sum, loan) => sum + loan.principal, 0).toLocaleString()}
                   </span>
-                  <span>Total: ₹{(loan.principal / 100000).toFixed(1)}L</span>
                 </div>
-                <Progress
-                  value={
-                    ((loan.principal - loan.remainingBalance) /
-                      loan.principal) *
-                    100
-                  }
-                  className="h-2"
-                />
-              </div>
-
-              <div className="flex gap-2 mt-4">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => {
-                    setSelectedLoan(loan);
-                    setShowLoanDetails(true);
-                  }}
-                >
-                  View Details
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => {
-                    setSelectedLoan(loan);
-                    setShowPaymentLogs(true);
-                  }}
-                >
-                  <FileText className="w-4 h-4 mr-1" />
-                  Logs
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openEditLoan(loan)}
-                >
-                  <Edit className="w-4 h-4 mr-1" /> Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-red-600"
-                  onClick={() => deleteLoan(loan.id)}
-                >
-                  <Trash2 className="w-4 h-4 mr-1" /> Delete
-                </Button>
+                <div className="flex justify-between">
+                  <span className="text-sm">Total Outstanding</span>
+                  <span className="font-medium">
+                    ₹{loans.reduce((sum, loan) => sum + loan.remainingBalance, 0).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm">Total Interest Paid</span>
+                  <span className="font-medium">
+                    ₹{loans.reduce((sum, loan) => sum + (loan.principal - loan.remainingBalance), 0).toLocaleString()}
+                  </span>
+                </div>
+                <div className="pt-3 border-t border-border">
+                  <div className="flex justify-between font-semibold">
+                    <span>Total EMI</span>
+                    <span className="text-danger">₹{totalEMI.toLocaleString()}</span>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
-        ))}
+        </div>
       </div>
 
       {/* Loan Details Modal */}

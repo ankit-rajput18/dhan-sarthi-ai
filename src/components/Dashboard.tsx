@@ -15,12 +15,21 @@ import {
   Target,
   AlertTriangle,
   CheckCircle2,
-  Lightbulb
+  Lightbulb,
+  Utensils,
+  Car,
+  ShoppingBag,
+  Zap,
+  Gamepad2,
+  Book,
+  Plane,
+  MoreHorizontal
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { getAuthUser } from '@/lib/auth';
 import { useEffect, useMemo, useState } from 'react';
 import { transactionAPI, loanAPI } from '@/lib/api';
+import { toast } from "sonner";
 
 const Dashboard = () => {
   // Get current user
@@ -32,6 +41,8 @@ const Dashboard = () => {
   const [totalExpenses, setTotalExpenses] = useState<number>(0);
   const [nextEmiAmount, setNextEmiAmount] = useState<number>(0);
   const [nextEmiDueInDays, setNextEmiDueInDays] = useState<number | null>(null);
+  const [expenseData, setExpenseData] = useState<any[]>([]); // Real expense data
+  const [monthlyData, setMonthlyData] = useState<any[]>([]); // Real monthly trend data
 
   useEffect(() => {
     const loadData = async () => {
@@ -47,6 +58,12 @@ const Dashboard = () => {
         const expense = tx?.summary?.totalExpenses || 0;
         setMonthlyIncome(income);
         setTotalExpenses(expense);
+
+        // Load real expense breakdown data
+        await loadExpenseBreakdown(start, end);
+        
+        // Load real monthly trend data
+        await loadMonthlyTrend();
 
         // Upcoming EMIs (with fallback if summary endpoint not available)
         try {
@@ -92,33 +109,99 @@ const Dashboard = () => {
             setNextEmiDueInDays(null);
           }
         }
-      } catch (e) {
-        // Leave defaults if API fails
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+        toast.error("Failed to load dashboard data");
       }
     };
+    
     loadData();
   }, []);
 
-  // Dummy data for charts (kept as-is for visuals)
-  const expenseData = [
-    { name: 'Food', value: 8500, color: '#ef4444' },
-    { name: 'Transport', value: 3200, color: '#f97316' },
-    { name: 'Shopping', value: 4500, color: '#eab308' },
-    { name: 'Bills', value: 6800, color: '#22c55e' },
-    { name: 'Entertainment', value: 2800, color: '#3b82f6' },
-  ];
+  // Load real expense breakdown data
+  const loadExpenseBreakdown = async (startDate: string, endDate: string) => {
+    try {
+      const response = await transactionAPI.getSummary(startDate, endDate);
+      const categoryBreakdown = response?.categoryBreakdown || [];
+      
+      // Map categories to colors and icons
+      const categoryConfig: { [key: string]: { color: string; icon: any } } = {
+        food: { color: '#ef4444', icon: Utensils },
+        transport: { color: '#f97316', icon: Car },
+        shopping: { color: '#eab308', icon: ShoppingBag },
+        bills: { color: '#22c55e', icon: Zap },
+        entertainment: { color: '#3b82f6', icon: Gamepad2 },
+        healthcare: { color: '#ec4899', icon: Plus },
+        education: { color: '#8b5cf6', icon: Book },
+        travel: { color: '#06b6d4', icon: Plane },
+        'other-expense': { color: '#64748b', icon: MoreHorizontal }
+      };
 
-  const monthlyData = [
-    { month: 'Jan', income: 45000, expense: 32000 },
-    { month: 'Feb', income: 45000, expense: 28000 },
-    { month: 'Mar', income: 45000, expense: 35000 },
-    { month: 'Apr', income: 45000, expense: 31000 },
-    { month: 'May', income: 45000, expense: 29000 },
-    { month: 'Jun', income: 45000, expense: 33000 },
-  ];
+      // Transform data for the pie chart
+      const transformedData = categoryBreakdown
+        .filter((item: any) => item._id !== 'other-income' && item._id !== 'salary' && item._id !== 'freelance' && item._id !== 'investment' && item._id !== 'business')
+        .map((item: any) => ({
+          name: item._id.charAt(0).toUpperCase() + item._id.slice(1),
+          value: item.total,
+          color: categoryConfig[item._id]?.color || '#64748b',
+          icon: categoryConfig[item._id]?.icon || Plus
+        }))
+        .sort((a: any, b: any) => b.value - a.value);
+
+      setExpenseData(transformedData);
+    } catch (error) {
+      console.error("Error loading expense breakdown:", error);
+      // Fallback to dummy data if API fails
+      setExpenseData([
+        { name: 'Food', value: 8500, color: '#ef4444' },
+        { name: 'Transport', value: 3200, color: '#f97316' },
+        { name: 'Shopping', value: 4500, color: '#eab308' },
+        { name: 'Bills', value: 6800, color: '#22c55e' },
+        { name: 'Entertainment', value: 2800, color: '#3b82f6' },
+      ]);
+    }
+  };
+
+  // Load real monthly trend data
+  const loadMonthlyTrend = async () => {
+    try {
+      // Get data for the last 6 months
+      const months = [];
+      const now = new Date();
+      
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const start = new Date(date.getFullYear(), date.getMonth(), 1).toISOString();
+        const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999).toISOString();
+        
+        const response = await transactionAPI.getSummary(start, end);
+        const income = response?.summary?.totalIncome || 0;
+        const expense = response?.summary?.totalExpenses || 0;
+        
+        months.push({
+          month: date.toLocaleString('default', { month: 'short' }),
+          income: Math.round(income),
+          expense: Math.round(expense)
+        });
+      }
+      
+      setMonthlyData(months);
+    } catch (error) {
+      console.error("Error loading monthly trend:", error);
+      // Fallback to dummy data if API fails
+      setMonthlyData([
+        { month: 'Jan', income: 45000, expense: 32000 },
+        { month: 'Feb', income: 45000, expense: 28000 },
+        { month: 'Mar', income: 45000, expense: 35000 },
+        { month: 'Apr', income: 45000, expense: 31000 },
+        { month: 'May', income: 45000, expense: 29000 },
+        { month: 'Jun', income: 45000, expense: 33000 },
+      ]);
+    }
+  };
 
   const monthlySavings = monthlyIncome - totalExpenses;
-  const savingsPercentage = (monthlySavings / monthlyIncome) * 100;
+  const savingsPercentage = monthlyIncome > 0 ? (monthlySavings / monthlyIncome) * 100 : 0;
 
   const aiInsights = [
     {

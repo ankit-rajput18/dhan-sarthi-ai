@@ -9,6 +9,7 @@ import {
   User
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { getAuthUser } from '@/lib/auth';
 
 import {
   Sidebar,
@@ -39,6 +40,10 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
 
+  const user = getAuthUser();
+  const userName = user?.name || 'User';
+  const userEmail = user?.email || 'User Email';
+
   const isActive = (path: string) => {
     if (path === "/dashboard") {
       return currentPath === "/" || currentPath === "/dashboard";
@@ -55,10 +60,10 @@ export function AppSidebar() {
 
   return (
     <Sidebar
-      className={isCollapsed ? "w-16" : "w-64"}
+      className={`${isCollapsed ? "w-16" : "w-64"} bg-background`}
       collapsible="icon"
     >
-      <SidebarHeader className="border-b border-border p-3 sm:p-4">
+      <SidebarHeader className="border-b border-border p-3 sm:p-4 bg-background">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
             <img 
@@ -73,9 +78,9 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="py-2 sm:py-4">
+      <SidebarContent className="py-2 sm:py-4 bg-background">
         <SidebarGroup>
-          <SidebarGroupLabel className={isCollapsed ? "sr-only" : "px-3 sm:px-4"}>
+          <SidebarGroupLabel className={`${isCollapsed ? "sr-only" : "px-3 sm:px-4"} text-foreground`}>
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -100,15 +105,15 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border p-3 sm:p-4">
+      <SidebarFooter className="border-t border-border p-3 sm:p-4 bg-background">
         <div className="flex items-center space-x-2 sm:space-x-3">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <User className="w-4 h-4 text-primary" />
           </div>
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <p className="mobile-caption font-medium truncate">Ankit Sharma</p>
-              <p className="text-xs text-muted-foreground truncate">ankit@example.com</p>
+              <p className="mobile-caption font-medium truncate text-foreground">{userName}</p>
+              <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
             </div>
           )}
         </div>

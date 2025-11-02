@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "http://localhost:5001/api";
 
 // Get auth token
 const getAuthToken = () => {
@@ -253,40 +253,130 @@ export const loanAPI = {
   },
 };
 
-// Goals API functions (we'll create this backend later)
+// Goals API functions
 export const goalsAPI = {
-  // For now, we'll use localStorage until we create the goals backend
-  getAll: async () => {
-    const goals = localStorage.getItem('ds_savings_goals');
-    return goals ? JSON.parse(goals) : [];
-  },
-
-  create: async (data: any) => {
-    const goals = await goalsAPI.getAll();
-    const newGoal = {
-      id: Date.now().toString(),
-      ...data,
-      createdAt: new Date().toISOString(),
-    };
-    goals.push(newGoal);
-    localStorage.setItem('ds_savings_goals', JSON.stringify(goals));
-    return newGoal;
-  },
-
-  update: async (id: string, data: any) => {
-    const goals = await goalsAPI.getAll();
-    const index = goals.findIndex((goal: any) => goal.id === id);
-    if (index !== -1) {
-      goals[index] = { ...goals[index], ...data };
-      localStorage.setItem('ds_savings_goals', JSON.stringify(goals));
-      return goals[index];
+  // Get all goals
+  getAll: async (params?: {
+    page?: number;
+    limit?: number;
+    status?: 'active' | 'completed' | 'cancelled';
+    category?: string;
+    priority?: 'low' | 'medium' | 'high';
+  }) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString());
+        }
+      });
     }
-    throw new Error('Goal not found');
+    
+    const queryString = searchParams.toString();
+    return apiRequest(`/goals${queryString ? `?${queryString}` : ''}`);
   },
 
+  // Get single goal
+  getById: async (id: string) => {
+    return apiRequest(`/goals/${id}`);
+  },
+
+  // Create goal
+  create: async (data: {
+    name: string;
+    targetAmount: number;
+    currentAmount?: number;
+    deadline: string;
+    category: 'vehicle' | 'home' | 'travel' | 'education' | 'health' | 'technology' | 'luxury' | 'hobby' | 'business' | 'emergency';
+    description?: string;
+    priority?: 'low' | 'medium' | 'high';
+    tags?: string[];
+  }) => {
+    return apiRequest('/goals', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Update goal
+  update: async (id: string, data: Partial<{
+    name: string;
+    targetAmount: number;
+    currentAmount: number;
+    deadline: string;
+    category: 'vehicle' | 'home' | 'travel' | 'education' | 'health' | 'technology' | 'luxury' | 'hobby' | 'business' | 'emergency';
+    description: string;
+    priority: 'low' | 'medium' | 'high';
+    status: 'active' | 'completed' | 'cancelled';
+    tags: string[];
+  }>) => {
+    return apiRequest(`/goals/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Delete goal
   delete: async (id: string) => {
-    const goals = await goalsAPI.getAll();
-    const filteredGoals = goals.filter((goal: any) => goal.id !== id);
-    localStorage.setItem('ds_savings_goals', JSON.stringify(filteredGoals));
+    return apiRequest(`/goals/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Update current amount
+  updateAmount: async (id: string, amount: number) => {
+    return apiRequest(`/goals/${id}/amount`, {
+      method: 'PUT',
+      body: JSON.stringify({ amount }),
+    });
+  },
+
+  // Get summary statistics
+  getSummary: async (status?: 'active' | 'completed' | 'cancelled') => {
+    const searchParams = new URLSearchParams();
+    if (status) searchParams.append('status', status);
+    
+    const queryString = searchParams.toString();
+    return apiRequest(`/goals/stats/summary${queryString ? `?${queryString}` : ''}`);
+  },
+};
+
+// Budget API functions
+export const budgetAPI = {
+  // Get budget for a specific month/year
+  getByMonth: async (year: number, month: number) => {
+    return apiRequest(`/budgets/${year}/${month}`);
+  },
+
+  // Get all budgets for user
+  getAll: async () => {
+    return apiRequest(`/budgets`);
+  },
+
+  // Create or update budget
+  save: async (data: {
+    month: number;
+    year: number;
+    categories: Array<{ name: string; amount: number }>;
+  }) => {
+    return apiRequest('/budgets', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Update specific category in budget
+  updateCategory: async (year: number, month: number, categoryName: string, amount: number) => {
+    return apiRequest(`/budgets/${year}/${month}/category/${categoryName}`, {
+      method: 'PUT',
+      body: JSON.stringify({ amount }),
+    });
+  },
+
+  // Delete budget for a specific month/year
+  delete: async (year: number, month: number) => {
+    return apiRequest(`/budgets/${year}/${month}`, {
+      method: 'DELETE',
+    });
   },
 };

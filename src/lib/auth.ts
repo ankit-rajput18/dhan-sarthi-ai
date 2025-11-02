@@ -9,7 +9,7 @@ export type AuthUser = {
 const AUTH_KEY = "ds_auth_user";
 const TOKEN_KEY = "ds_auth_token";
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "http://localhost:5001/api";
 
 export function getAuthUser(): AuthUser | null {
   try {

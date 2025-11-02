@@ -19,35 +19,11 @@ import {
   MessageSquare,
   BarChart3,
   Settings,
-  Sparkles
+  Sparkles,
+  FileText
 } from "lucide-react";
 
 const AIMentor = () => {
-  // Add custom scrollbar styles
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.textContent = `
-      .chat-scrollbar::-webkit-scrollbar {
-        width: 8px;
-      }
-      .chat-scrollbar::-webkit-scrollbar-track {
-        background: #f3f4f6;
-        border-radius: 4px;
-      }
-      .chat-scrollbar::-webkit-scrollbar-thumb {
-        background: #d1d5db;
-        border-radius: 4px;
-      }
-      .chat-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #9ca3af;
-      }
-    `;
-    document.head.appendChild(style);
-    
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([
     {
@@ -62,7 +38,6 @@ const AIMentor = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  
   const quickActions = [
     { id: 1, text: "How can I save more money?", category: "savings" },
     { id: 2, text: "Show my spending trends", category: "analysis" },
@@ -119,139 +94,211 @@ const AIMentor = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      
-
-      {/* Toggle Button for Insights */}
-      {!showInsights && (
-        <div className="bg-white border-b border-gray-200 px-4 py-2">
-          <Button
-            variant="ghost"
-            onClick={() => setShowInsights(true)}
-            className="w-full justify-center gap-2 text-gray-600 hover:text-gray-900"
-          >
-            <ChevronDown className="w-4 h-4" />
-            Show Insights
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+            <Bot className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold">AI Money Mentor</h1>
+            <p className="text-muted-foreground">Your personal finance coach</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+            <Settings className="w-4 h-4" />
           </Button>
         </div>
-      )}
+      </div>
 
-      {/* Main Chat Interface */}
-      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full h-full">
-        {/* Chat Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">AI Money Mentor</h1>
-                <p className="text-sm text-gray-600">Your personal finance coach</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <BarChart3 className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Settings className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Chat Messages - Scrollable Area */}
-        <div 
-          className="flex-1 overflow-y-auto px-6 py-4 space-y-6 chat-scrollbar"
-          style={{
-            scrollbarWidth: 'thin',
-            scrollbarColor: '#d1d5db #f3f4f6'
-          }}
-        >
-          {chatHistory.map((chat) => (
-            <div key={chat.id} className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`flex gap-3 max-w-[80%] ${chat.type === 'user' ? 'flex-row-reverse' : ''}`}>
-                <Avatar className="w-8 h-8 flex-shrink-0">
-                  <AvatarFallback className={chat.type === 'ai' ? 'bg-primary text-white' : 'bg-gray-600 text-white'}>
-                    {chat.type === 'ai' ? <Bot className="w-4 h-4" /> : 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className={`p-4 rounded-2xl ${
-                  chat.type === 'user' 
-                    ? 'bg-primary text-white' 
-                    : 'bg-white border border-gray-200 shadow-sm'
-                }`}>
-                  <p className="text-sm leading-relaxed">{chat.message}</p>
-                  <p className={`text-xs mt-2 ${
-                    chat.type === 'user' ? 'text-white/70' : 'text-gray-500'
-                  }`}>
-                    {chat.time}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Typing Indicator */}
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="flex gap-3 max-w-[80%]">
-                <Avatar className="w-8 h-8 flex-shrink-0">
-                  <AvatarFallback className="bg-primary text-white">
-                    <Bot className="w-4 h-4" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="bg-white border border-gray-200 shadow-sm p-4 rounded-2xl">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div ref={chatEndRef} />
-        </div>
-
-        {/* Quick Actions - Fixed at Bottom */}
-        <div className="px-6 py-3 border-t border-gray-200 bg-gray-50 flex-shrink-0">
-          <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-2">
-            {quickActions.map((action) => (
-              <Button
-                key={action.id}
-                variant="outline"
-                size="sm"
-                className="text-xs h-8 whitespace-nowrap flex-shrink-0"
-                onClick={() => handleQuickAction(action.text)}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left Column - Chat Interface */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Chat Messages */}
+          <Card className="shadow-card border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-primary" />
+                Chat
+              </CardTitle>
+              <CardDescription>Ask me anything about your finances</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {/* Chat Messages - Scrollable Area */}
+              <div 
+                className="h-96 overflow-y-auto space-y-4 mb-4 chat-scrollbar"
+                style={{
+                  scrollbarWidth: 'thin',
+                  scrollbarColor: '#d1d5db #f3f4f6'
+                }}
               >
-                {action.text}
-              </Button>
-            ))}
-          </div>
+                {chatHistory.map((chat) => (
+                  <div key={chat.id} className={`flex ${chat.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`flex gap-3 max-w-[85%] ${chat.type === 'user' ? 'flex-row-reverse' : ''}`}>
+                      <Avatar className="w-8 h-8 flex-shrink-0">
+                        <AvatarFallback className={chat.type === 'ai' ? 'bg-primary text-white' : 'bg-gray-600 text-white'}>
+                          {chat.type === 'ai' ? <Bot className="w-4 h-4" /> : 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className={`p-4 rounded-2xl ${
+                        chat.type === 'user' 
+                          ? 'bg-primary text-white' 
+                          : 'bg-white border border-gray-200 shadow-sm'
+                      }`}>
+                        <p className="text-sm leading-relaxed">{chat.message}</p>
+                        <p className={`text-xs mt-2 ${
+                          chat.type === 'user' ? 'text-white/70' : 'text-gray-500'
+                        }`}>
+                          {chat.time}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Typing Indicator */}
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="flex gap-3 max-w-[85%]">
+                      <Avatar className="w-8 h-8 flex-shrink-0">
+                        <AvatarFallback className="bg-primary text-white">
+                          <Bot className="w-4 h-4" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="bg-white border border-gray-200 shadow-sm p-4 rounded-2xl">
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Quick Actions */}
+              <div className="mb-4">
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Quick Actions</h3>
+                <div className="flex flex-wrap gap-2">
+                  {quickActions.map((action) => (
+                    <Button
+                      key={action.id}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => handleQuickAction(action.text)}
+                    >
+                      {action.text}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Message Input */}
+              <div className="flex gap-2">
+                <Input
+                  ref={inputRef}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Ask me anything about your finances..."
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                  className="flex-1 border-gray-300 focus:border-primary focus:ring-primary rounded-xl"
+                />
+                <Button 
+                  onClick={handleSendMessage} 
+                  disabled={!message.trim()}
+                  className="px-4 rounded-xl bg-primary hover:bg-primary/90"
+                >
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Message Input - Fixed at Bottom */}
-        <div className="px-6 py-4 bg-white border-t border-gray-200 flex-shrink-0">
-          <div className="flex gap-3">
-            <Input
-              ref={inputRef}
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Ask me anything about your finances..."
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              className="flex-1 border-gray-300 focus:border-primary focus:ring-primary rounded-xl"
-            />
-            <Button 
-              onClick={handleSendMessage} 
-              disabled={!message.trim()}
-              className="px-6 rounded-xl bg-primary hover:bg-primary/90"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
+        {/* Right Column - Insights */}
+        <div className="space-y-6">
+          {/* Financial Insights */}
+          <Card className="shadow-card border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                Financial Insights
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                {stats.map((stat, index) => (
+                  <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-surface/50">
+                    <div className={`w-10 h-10 rounded-full ${stat.color.replace('text-', 'bg-')}/10 flex items-center justify-center`}>
+                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">{stat.label}</p>
+                      <p className="font-bold text-lg">{stat.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                <p className="text-sm font-medium text-blue-700 mb-1">
+                  <Lightbulb className="w-4 h-4 inline mr-1" />
+                  Recommendation
+                </p>
+                <p className="text-xs text-blue-600">
+                  Consider increasing your emergency fund to 6 months of expenses
+                </p>
+              </div>
+              
+              <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+                <p className="text-sm font-medium text-green-700 mb-1">
+                  <TrendingUp className="w-4 h-4 inline mr-1" />
+                  Progress Update
+                </p>
+                <p className="text-xs text-green-600">
+                  Your savings rate is above average. Keep up the good work!
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Tips */}
+          <Card className="shadow-card border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" />
+                Quick Tips
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="p-3 rounded-lg bg-success/5 border border-success/20">
+                <p className="text-sm font-medium text-success mb-1">Budget Tracking</p>
+                <p className="text-xs text-muted-foreground">
+                  Track your expenses daily to identify spending patterns
+                </p>
+              </div>
+              
+              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                <p className="text-sm font-medium text-primary mb-1">Investment Strategy</p>
+                <p className="text-xs text-muted-foreground">
+                  Start with low-risk investments and gradually diversify
+                </p>
+              </div>
+
+              <div className="p-3 rounded-lg bg-warning/5 border border-warning/20">
+                <p className="text-sm font-medium text-warning mb-1">Debt Management</p>
+                <p className="text-xs text-muted-foreground">
+                  Pay off high-interest debt first to save on interest costs
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

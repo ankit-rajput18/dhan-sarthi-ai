@@ -272,10 +272,11 @@ const TransactionManager = () => {
           <DialogTrigger asChild>
             <Button onClick={resetForm} className="w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
-              Add Transaction
+              <span className="hidden xs:inline">Add Transaction</span>
+              <span className="xs:hidden">Add</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>
                 {editingTransaction ? 'Edit Transaction' : 'Add New Transaction'}
@@ -285,7 +286,7 @@ const TransactionManager = () => {
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="type">Type</Label>
                   <Select
@@ -411,7 +412,7 @@ const TransactionManager = () => {
                       })
                     }
                   />
-                  <Label htmlFor="recurring">This is a recurring transaction</Label>
+                  <Label htmlFor="recurring" className="text-sm">This is a recurring transaction</Label>
                 </div>
 
                 {formData.recurring.isRecurring && (
@@ -441,11 +442,11 @@ const TransactionManager = () => {
                 )}
               </div>
 
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto">
                   Cancel
                 </Button>
-                <Button type="submit">
+                <Button type="submit" className="w-full sm:w-auto">
                   {editingTransaction ? 'Update Transaction' : 'Add Transaction'}
                 </Button>
               </DialogFooter>
@@ -455,57 +456,57 @@ const TransactionManager = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Income</p>
-                <p className="text-2xl font-bold text-green-600">{formatCurrency(stats.totalIncome)}</p>
-                <p className="text-xs text-muted-foreground">{stats.incomeCount} transactions</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Total Income</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-600">{formatCurrency(stats.totalIncome)}</p>
+                <p className="text-xs text-muted-foreground hidden sm:block">{stats.incomeCount} transactions</p>
               </div>
-              <TrendingUp className="w-8 h-8 text-green-600" />
+              <TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Expenses</p>
-                <p className="text-2xl font-bold text-red-600">{formatCurrency(stats.totalExpenses)}</p>
-                <p className="text-xs text-muted-foreground">{stats.expenseCount} transactions</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Total Expenses</p>
+                <p className="text-lg sm:text-2xl font-bold text-red-600">{formatCurrency(stats.totalExpenses)}</p>
+                <p className="text-xs text-muted-foreground hidden sm:block">{stats.expenseCount} transactions</p>
               </div>
-              <TrendingDown className="w-8 h-8 text-red-600" />
+              <TrendingDown className="w-6 h-6 sm:w-8 sm:h-8 text-red-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Net Amount</p>
-                <p className={`text-2xl font-bold ${stats.netAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                <p className="text-xs sm:text-sm text-muted-foreground">Net Amount</p>
+                <p className={`text-lg sm:text-2xl font-bold ${stats.netAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   {formatCurrency(stats.netAmount)}
                 </p>
-                <p className="text-xs text-muted-foreground">Income - Expenses</p>
+                <p className="text-xs text-muted-foreground hidden sm:block">Income - Expenses</p>
               </div>
-              <DollarSign className="w-8 h-8 text-blue-600" />
+              <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Transactions</p>
-                <p className="text-2xl font-bold">{stats.incomeCount + stats.expenseCount}</p>
-                <p className="text-xs text-muted-foreground">All time</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Total Transactions</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.incomeCount + stats.expenseCount}</p>
+                <p className="text-xs text-muted-foreground hidden sm:block">All time</p>
               </div>
-              <Calendar className="w-8 h-8 text-purple-600" />
+              <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
             </div>
           </CardContent>
         </Card>
@@ -513,8 +514,8 @@ const TransactionManager = () => {
 
       {/* Filters */}
       <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -527,7 +528,7 @@ const TransactionManager = () => {
               </div>
             </div>
             <Select value={filterType} onValueChange={(value: 'all' | 'income' | 'expense') => setFilterType(value)}>
-              <SelectTrigger className="w-full sm:w-40">
+              <SelectTrigger className="w-full sm:w-32">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -536,9 +537,9 @@ const TransactionManager = () => {
                 <SelectItem value="expense">Expense</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" onClick={fetchTransactions}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
+            <Button variant="outline" size="sm" onClick={fetchTransactions} className="w-full sm:w-auto">
+              <RefreshCw className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden xs:inline">Refresh</span>
             </Button>
           </div>
         </CardContent>
@@ -565,41 +566,41 @@ const TransactionManager = () => {
               </Button>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {filteredTransactions.map((transaction) => (
-                <div key={transaction._id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center space-x-4">
-                    <div className="text-2xl">{getCategoryIcon(transaction.category)}</div>
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <h3 className="font-medium">{transaction.description}</h3>
-                        <Badge variant={transaction.type === 'income' ? 'default' : 'secondary'}>
+                <div key={transaction._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors gap-3">
+                  <div className="flex items-start space-x-3 sm:items-center">
+                    <div className="text-xl sm:text-2xl">{getCategoryIcon(transaction.category)}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-medium truncate">{transaction.description}</h3>
+                        <Badge variant={transaction.type === 'income' ? 'default' : 'secondary'} className="text-xs">
                           {transaction.type}
                         </Badge>
                         {transaction.recurring.isRecurring && (
-                          <Badge variant="outline">
-                            <RefreshCw className="w-3 h-3 mr-1" />
+                          <Badge variant="outline" className="text-xs">
+                            <RefreshCw className="w-2 h-2 mr-1" />
                             {transaction.recurring.frequency}
                           </Badge>
                         )}
                       </div>
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground mt-1">
                         <span>{formatDate(transaction.date)}</span>
                         <span className="capitalize">{transaction.category}</span>
                         {transaction.location && (
                           <span className="flex items-center">
-                            <MapPin className="w-3 h-3 mr-1" />
+                            <MapPin className="w-2 h-2 mr-1" />
                             {transaction.location}
                           </span>
                         )}
                         <span className="flex items-center">
-                          <CreditCard className="w-3 h-3 mr-1" />
+                          <CreditCard className="w-2 h-2 mr-1" />
                           {transaction.paymentMethod}
                         </span>
                       </div>
                       {transaction.tags.length > 0 && (
-                        <div className="flex items-center space-x-1 mt-1">
-                          <Tag className="w-3 h-3 text-muted-foreground" />
+                        <div className="flex flex-wrap items-center gap-1 mt-1">
+                          <Tag className="w-2 h-2 text-muted-foreground" />
                           {transaction.tags.map((tag, index) => (
                             <Badge key={index} variant="outline" className="text-xs">
                               {tag}
@@ -609,8 +610,8 @@ const TransactionManager = () => {
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <p className={`font-bold ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className="flex items-center justify-between sm:justify-end gap-2">
+                    <p className={`font-bold text-sm sm:text-base ${transaction.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
                       {transaction.type === 'income' ? '+' : '-'}{formatCurrency(transaction.amount)}
                     </p>
                     <div className="flex space-x-1">
@@ -618,6 +619,7 @@ const TransactionManager = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(transaction)}
+                        className="h-8 w-8 p-0"
                       >
                         <Edit className="w-4 h-4" />
                       </Button>
@@ -625,7 +627,7 @@ const TransactionManager = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(transaction._id)}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -638,8 +640,8 @@ const TransactionManager = () => {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-3">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 Page {currentPage} of {totalPages}
               </p>
               <div className="flex space-x-2">
@@ -649,7 +651,8 @@ const TransactionManager = () => {
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
                 >
-                  Previous
+                  <span className="hidden xs:inline">Previous</span>
+                  <span className="xs:inline">Prev</span>
                 </Button>
                 <Button
                   variant="outline"
@@ -657,7 +660,8 @@ const TransactionManager = () => {
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
                 >
-                  Next
+                  <span className="hidden xs:inline">Next</span>
+                  <span className="xs:inline">Next</span>
                 </Button>
               </div>
             </div>

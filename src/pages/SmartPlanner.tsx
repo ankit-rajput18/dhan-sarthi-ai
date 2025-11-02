@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { transactionAPI, goalsAPI } from "@/lib/api";
+import { useNavigate } from "react-router-dom";
+import { transactionAPI, goalsAPI, budgetAPI } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,16 +36,49 @@ import {
   CheckCircle,
   DollarSign,
   CreditCard,
-  X
+  X,
+  MoreHorizontal
 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import TransactionManager from "@/components/TransactionManager";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster, toast } from "@/components/ui/sonner";
+
+interface GoalData {
+  name: string;
+  targetAmount: string;
+  currentAmount: string;
+  deadline: string;
+  category: string;
+  description: string;
+  priority: string;
+}
+
+interface SavingsGoal {
+  id: string;
+  name: string;
+  target: number;
+  current: number;
+  deadline: string;
+  category: string;
+  description: string;
+  priority: string;
+  icon: any;
+  color: string;
+}
+
+interface BudgetCategory {
+  name: string;
+  amount: number; // budget amount
+  spent: number; // actual spending
+  icon: any;
+  color: string;
+}
 
 const SmartPlanner = () => {
+  const navigate = useNavigate();
   const [showAddGoal, setShowAddGoal] = useState(false);
-  const [goalData, setGoalData] = useState({
+  const [goalData, setGoalData] = useState<GoalData>({
     name: "",
     targetAmount: "",
     currentAmount: "0",
@@ -53,6 +87,8 @@ const SmartPlanner = () => {
     description: "",
     priority: "medium"
   });
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [dismissedInsights, setDismissedInsights] = useState<Set<number>>(new Set());
 
@@ -70,53 +106,18 @@ const SmartPlanner = () => {
     { value: "emergency", label: "Emergency Fund", icon: PiggyBank, color: "bg-emerald-500" },
   ];
 
-  // Mock data
-  const monthlyBreakdown = [
-    { category: "Food", amount: 8500, budget: 10000, icon: Utensils, color: "bg-red-500" },
-    { category: "Transport", amount: 3200, budget: 4000, icon: Car, color: "bg-orange-500" },
-    { category: "Shopping", amount: 4500, budget: 5000, icon: ShoppingBag, color: "bg-yellow-500" },
-    { category: "Bills", amount: 6800, budget: 7000, icon: Zap, color: "bg-green-500" },
-    { category: "Entertainment", amount: 2800, budget: 3000, icon: Gamepad2, color: "bg-blue-500" },
-  ];
-
-  const [savingsGoals, setSavingsGoals] = useState([
-    { 
-      id: 1,
-      name: "Bike Goal", 
-      target: 200000, 
-      current: 80000, 
-      deadline: "Dec 2024",
-      category: "vehicle",
-      description: "Buying a new bike for daily commute",
-      priority: "high",
-      icon: Bike,
-      color: "bg-blue-500"
-    },
-    { 
-      id: 2,
-      name: "Emergency Fund", 
-      target: 100000, 
-      current: 35000, 
-      deadline: "Jun 2025",
-      category: "emergency",
-      description: "Building emergency fund for financial security",
-      priority: "high",
-      icon: PiggyBank,
-      color: "bg-emerald-500"
-    },
-    { 
-      id: 3,
-      name: "Vacation", 
-      target: 50000, 
-      current: 15000, 
-      deadline: "Mar 2025",
-      category: "travel",
-      description: "Family vacation to Goa",
-      priority: "medium",
-      icon: Plane,
-      color: "bg-purple-500"
-    },
-  ]);
+  // Category mapping for icons and colors
+  const categoryConfig: { [key: string]: { icon: any; color: string } } = {
+    food: { icon: Utensils, color: "bg-red-500" },
+    transport: { icon: Car, color: "bg-orange-500" },
+    shopping: { icon: ShoppingBag, color: "bg-yellow-500" },
+    bills: { icon: Zap, color: "bg-green-500" },
+    entertainment: { icon: Gamepad2, color: "bg-blue-500" },
+    healthcare: { icon: Heart, color: "bg-pink-500" },
+    education: { icon: GraduationCap, color: "bg-purple-500" },
+    travel: { icon: Plane, color: "bg-indigo-500" },
+    "other-expense": { icon: MoreHorizontal, color: "bg-gray-500" },
+  };
 
   // Mock loan data for AI analysis
   const existingLoans = [
@@ -161,25 +162,81 @@ const SmartPlanner = () => {
     { month: 'Jun', amount: 33000 },
   ];
 
-  const handleGoalSubmit = (e: React.FormEvent) => {
+  // Replace the mock data with state for real data
+  const [monthlyBreakdown, setMonthlyBreakdown] = useState<BudgetCategory[]>([]);
+  const [loadingBudget, setLoadingBudget] = useState(true);
+
+  // Fetch goals from API when component mounts
+  useEffect(() => {
+    fetchGoals();
+    fetchMonthlyBreakdown(); // Add this to fetch budget data
+  }, []);
+
+  const fetchGoals = async () => {
+    try {
+      setLoading(true);
+      const response: any = await goalsAPI.getAll();
+      // Transform API response to match component's expected format
+      const transformedGoals = response.goals.map((goal: any) => {
+        const category = goalCategories.find(cat => cat.value === goal.category);
+        return {
+          id: goal._id,
+          name: goal.name,
+          target: goal.targetAmount,
+          current: goal.currentAmount,
+          deadline: new Date(goal.deadline).toLocaleDateString(),
+          category: goal.category,
+          description: goal.description,
+          priority: goal.priority,
+          icon: category?.icon || Target,
+          color: category?.color || "bg-gray-500"
+        };
+      });
+      setSavingsGoals(transformedGoals);
+    } catch (error) {
+      console.error("Error fetching goals:", error);
+      toast.error("Failed to load goals");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const selectedCategory = goalCategories.find(cat => cat.value === goalData.category);
-    const newGoal = {
-      id: Date.now(),
-      name: goalData.name,
-      target: parseInt(goalData.targetAmount),
-      current: parseInt(goalData.currentAmount),
-      deadline: goalData.deadline,
-      category: goalData.category,
-      description: goalData.description,
-      priority: goalData.priority,
-      icon: selectedCategory?.icon || Target,
-      color: selectedCategory?.color || "bg-gray-500"
-    };
-    
-    setSavingsGoals([...savingsGoals, newGoal]);
-    setShowAddGoal(false);
-    resetGoalForm();
+    try {
+      // Validate that category and priority are valid before sending to API
+      const validCategories = ['vehicle', 'home', 'travel', 'education', 'health', 'technology', 'luxury', 'hobby', 'business', 'emergency'] as const;
+      const validPriorities = ['low', 'medium', 'high'] as const;
+      
+      if (!validCategories.includes(goalData.category as any)) {
+        toast.error("Please select a valid category");
+        return;
+      }
+      
+      if (!validPriorities.includes(goalData.priority as any)) {
+        toast.error("Please select a valid priority");
+        return;
+      }
+
+      const newGoalData = {
+        name: goalData.name,
+        targetAmount: parseInt(goalData.targetAmount),
+        currentAmount: parseInt(goalData.currentAmount),
+        deadline: goalData.deadline,
+        category: goalData.category as 'vehicle' | 'home' | 'travel' | 'education' | 'health' | 'technology' | 'luxury' | 'hobby' | 'business' | 'emergency',
+        description: goalData.description,
+        priority: goalData.priority as 'low' | 'medium' | 'high'
+      };
+
+      await goalsAPI.create(newGoalData);
+      toast.success("Goal created successfully");
+      setShowAddGoal(false);
+      resetGoalForm();
+      fetchGoals(); // Refresh the goals list
+    } catch (error) {
+      console.error("Error creating goal:", error);
+      toast.error("Failed to create goal");
+    }
   };
 
   const resetGoalForm = () => {
@@ -192,6 +249,117 @@ const SmartPlanner = () => {
       description: "",
       priority: "medium"
     });
+  };
+
+  // Fetch monthly budget breakdown
+  const fetchMonthlyBreakdown = async () => {
+    try {
+      setLoadingBudget(true);
+      
+      // Get current month and year
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1; // JavaScript months are 0-indexed
+
+      // Fetch budget data
+      let budgetResponse: any;
+      try {
+        budgetResponse = await budgetAPI.getByMonth(year, month);
+      } catch (error) {
+        // If no budget exists, we'll show 0 budgets
+        budgetResponse = { budget: null };
+      }
+
+      // Fetch transaction data for current month
+      const startDate = new Date(year, month - 1, 1).toISOString();
+      const endDate = new Date(year, month, 0, 23, 59, 59, 999).toISOString();
+      
+      const transactionResponse = await transactionAPI.getSummary(startDate, endDate);
+      const categoryBreakdown = transactionResponse?.categoryBreakdown || [];
+
+      // Combine budget and spending data
+      const budgetCategories = budgetResponse.budget?.categories || [];
+      
+      // Create a map of spending by category
+      const spendingMap: { [key: string]: number } = {};
+      categoryBreakdown
+        .filter((item: any) => item._id !== 'other-income' && item._id !== 'salary' && item._id !== 'freelance' && item._id !== 'investment' && item._id !== 'business')
+        .forEach((item: any) => {
+          spendingMap[item._id] = Math.abs(item.total); // Use absolute value for expenses
+        });
+
+      // Create the breakdown data
+      const breakdownData: BudgetCategory[] = [];
+      
+      // Add all budget categories with their spending
+      budgetCategories.forEach((budgetCat: any) => {
+        const categoryKey = budgetCat.name.toLowerCase();
+        const config = categoryConfig[categoryKey] || { icon: MoreHorizontal, color: "bg-gray-500" };
+        
+        breakdownData.push({
+          name: budgetCat.name.charAt(0).toUpperCase() + budgetCat.name.slice(1),
+          amount: budgetCat.amount,
+          spent: spendingMap[categoryKey] || 0,
+          icon: config.icon,
+          color: config.color
+        });
+      });
+
+      // Add any spending categories that don't have a budget
+      Object.keys(spendingMap).forEach(categoryKey => {
+        const categoryName = categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1);
+        const hasBudget = budgetCategories.some((cat: any) => cat.name.toLowerCase() === categoryKey);
+        
+        if (!hasBudget && spendingMap[categoryKey] > 0) {
+          const config = categoryConfig[categoryKey] || { icon: MoreHorizontal, color: "bg-gray-500" };
+          
+          breakdownData.push({
+            name: categoryName,
+            amount: 0, // No budget set
+            spent: spendingMap[categoryKey],
+            icon: config.icon,
+            color: config.color
+          });
+        }
+      });
+
+      setMonthlyBreakdown(breakdownData);
+    } catch (error) {
+      console.error("Error fetching monthly breakdown:", error);
+      // Fallback to mock data if API fails
+      setMonthlyBreakdown([
+        { category: "Food", amount: 10000, spent: 8500, icon: Utensils, color: "bg-red-500" },
+        { category: "Transport", amount: 4000, spent: 3200, icon: Car, color: "bg-orange-500" },
+        { category: "Shopping", amount: 5000, spent: 4500, icon: ShoppingBag, color: "bg-yellow-500" },
+        { category: "Bills", amount: 7000, spent: 6800, icon: Zap, color: "bg-green-500" },
+        { category: "Entertainment", amount: 3000, spent: 2800, icon: Gamepad2, color: "bg-blue-500" },
+      ].map(item => ({
+        name: item.category,
+        amount: item.amount,
+        spent: item.spent,
+        icon: item.icon,
+        color: item.color
+      })));
+    } finally {
+      setLoadingBudget(false);
+    }
+  };
+
+  // Update the monthly breakdown when a budget is set
+  const updateBudgetCategory = async (categoryName: string, amount: number) => {
+    try {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      
+      await budgetAPI.updateCategory(year, month, categoryName, amount);
+      // Refresh the breakdown after updating
+      await fetchMonthlyBreakdown();
+      toast.success("Budget updated successfully");
+    } catch (error) {
+      console.error("Error updating budget:", error);
+      toast.error("Failed to update budget");
+    }
   };
 
   // AI Analysis Functions
@@ -474,8 +642,8 @@ const SmartPlanner = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="mobile-heading font-bold">Smart Planner</h1>
-          <p className="mobile-body text-muted-foreground">Set and track your financial goals</p>
+          <h1 className="text-3xl font-bold">Smart Planner</h1>
+          <p className="text-muted-foreground">Set and track your financial goals</p>
         </div>
         <Dialog open={showAddGoal} onOpenChange={setShowAddGoal}>
           <DialogTrigger asChild>
@@ -506,7 +674,7 @@ const SmartPlanner = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="targetAmount">Target Amount (₹)</Label>
                   <Input
@@ -532,7 +700,7 @@ const SmartPlanner = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="category">Goal Category</Label>
                   <Select value={goalData.category} onValueChange={(value) => setGoalData({ ...goalData, category: value })}>
@@ -613,7 +781,7 @@ const SmartPlanner = () => {
           <Lightbulb className="w-5 h-5 text-primary" />
           AI Financial Insights
         </h2>
-        <div className="grid gap-4">
+        <div className="space-y-4">
           {getAIFinancialInsights()
             .filter(insight => !dismissedInsights.has(insight.id))
             .map((insight) => (
@@ -641,198 +809,230 @@ const SmartPlanner = () => {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6 sm:gap-8">
-        {/* Monthly Breakdown */}
-        <Card className="shadow-card border-0">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 mobile-subtitle">
-              <Target className="w-5 h-5 text-primary" />
-              Monthly Budget Breakdown
-            </CardTitle>
-            <CardDescription className="mobile-caption">Track your spending against budgets</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {monthlyBreakdown.map((item, index) => {
-              const percentage = (item.amount / item.budget) * 100;
-              const isOverBudget = percentage > 100;
-              
-              return (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg ${item.color} flex items-center justify-center`}>
-                        <item.icon className="w-4 h-4 text-white" />
-                      </div>
-                      <div>
-                        <p className="mobile-caption font-medium">{item.category}</p>
-                        <p className="text-xs text-muted-foreground">
-                          ₹{item.amount.toLocaleString()} / ₹{item.budget.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge variant={isOverBudget ? "destructive" : "secondary"}>
-                      {percentage.toFixed(0)}%
-                    </Badge>
-                  </div>
-                  <Progress value={Math.min(percentage, 100)} className="h-2" />
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Left Column - Monthly Breakdown & Spending Trend */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Monthly Breakdown */}
+          <Card className="shadow-card border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="w-5 h-5 text-primary" />
+                Monthly Budget Breakdown
+              </CardTitle>
+              <CardDescription>Track your spending against budgets</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {loadingBudget ? (
+                <div className="flex justify-center items-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-
-        {/* Savings Goals */}
-        <Card className="shadow-card border-0">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 mobile-subtitle">
-              <PiggyBank className="w-5 h-5 text-primary" />
-              Savings Goals
-            </CardTitle>
-            <CardDescription className="mobile-caption">Track your progress towards financial goals</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {savingsGoals.map((goal) => {
-              const percentage = (goal.current / goal.target) * 100;
-              const remaining = goal.target - goal.current;
-              const monthsToDeadline = Math.max(0, Math.ceil((new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30)));
-              const monthlySavingsNeeded = monthsToDeadline > 0 ? remaining / monthsToDeadline : 0;
-              
-              return (
-                <div key={goal.id} className="space-y-3 p-4 border rounded-lg hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg ${goal.color} flex items-center justify-center`}>
-                        <goal.icon className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <p className="mobile-caption font-medium">{goal.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          Due: {new Date(goal.deadline).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <Badge 
-                        variant={goal.priority === 'high' ? 'destructive' : goal.priority === 'medium' ? 'default' : 'secondary'}
-                        className="mb-1"
-                      >
-                        {goal.priority}
-                      </Badge>
-                      <p className="text-sm font-bold text-primary">{percentage.toFixed(0)}%</p>
-                    </div>
-                  </div>
+              ) : monthlyBreakdown.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Target className="w-12 h-12 mx-auto text-muted-foreground/20 mb-2" />
+                  <p>No budget data found</p>
+                  <p className="text-sm mt-1">Set your monthly budget to start tracking</p>
+                </div>
+              ) : (
+                monthlyBreakdown.map((item, index) => {
+                  const percentage = item.amount > 0 ? (item.spent / item.amount) * 100 : (item.spent > 0 ? 100 : 0);
+                  const isOverBudget = percentage > 100;
                   
-                  <Progress value={percentage} className="h-3" />
-                  
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Saved</p>
-                      <p className="font-semibold">₹{goal.current.toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Target</p>
-                      <p className="font-semibold">₹{goal.target.toLocaleString()}</p>
-                    </div>
-                  </div>
-                  
-                  {goal.description && (
-                    <p className="text-xs text-muted-foreground italic">
-                      {goal.description}
-                    </p>
-                  )}
-                  
-                  {monthsToDeadline > 0 && (
-                    <div className="bg-blue-50 p-3 rounded-lg">
-                      <p className="text-xs text-blue-700">
-                        <strong>Monthly savings needed:</strong> ₹{monthlySavingsNeeded.toLocaleString()} 
-                        ({monthsToDeadline} months remaining)
-                      </p>
-                    </div>
-                  )}
-
-                  {/* AI Recommendation for this goal */}
-                  {(() => {
-                    const recommendation = getGoalSpecificRecommendation(goal);
-                    return (
-                      <div className={`p-3 rounded-lg ${
-                        recommendation.type === 'save' ? 'bg-green-50 border border-green-200' :
-                        recommendation.type === 'loan' ? 'bg-orange-50 border border-orange-200' :
-                        recommendation.type === 'alert' ? 'bg-red-50 border border-red-200' :
-                        'bg-blue-50 border border-blue-200'
-                      }`}>
-                        <div className="flex items-start gap-2">
-                          <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                            recommendation.type === 'save' ? 'bg-green-500' :
-                            recommendation.type === 'loan' ? 'bg-orange-500' :
-                            recommendation.type === 'alert' ? 'bg-red-500' :
-                            'bg-blue-500'
-                          }`}>
-                            {recommendation.type === 'save' ? (
-                              <PiggyBank className="w-3 h-3 text-white" />
-                            ) : recommendation.type === 'loan' ? (
-                              <CreditCard className="w-3 h-3 text-white" />
-                            ) : recommendation.type === 'alert' ? (
-                              <AlertTriangle className="w-3 h-3 text-white" />
-                            ) : (
-                              <Target className="w-3 h-3 text-white" />
-                            )}
+                  return (
+                    <div key={index} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-lg ${item.color} flex items-center justify-center`}>
+                            <item.icon className="w-4 h-4 text-white" />
                           </div>
-                          <div className="flex-1">
-                            <p className={`text-xs font-medium ${
-                              recommendation.type === 'save' ? 'text-green-700' :
-                              recommendation.type === 'loan' ? 'text-orange-700' :
-                              recommendation.type === 'alert' ? 'text-red-700' :
-                              'text-blue-700'
-                            }`}>
-                              AI Recommendation: {recommendation.message}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {recommendation.reason}
+                          <div>
+                            <p className="font-medium">{item.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              ₹{item.spent.toLocaleString()} / ₹{item.amount.toLocaleString()}
                             </p>
                           </div>
                         </div>
+                        <Badge variant={isOverBudget ? "destructive" : "secondary"}>
+                          {percentage.toFixed(0)}%
+                        </Badge>
                       </div>
-                    );
-                  })()}
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
+                      <Progress value={Math.min(percentage, 100)} className="h-2" />
+                    </div>
+                  );
+                })
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Spending Trend Chart */}
+          <Card className="shadow-card border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingDown className="w-5 h-5 text-primary" />
+                Spending Trend
+              </CardTitle>
+              <CardDescription>Your monthly spending pattern over the last 6 months</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={spendingTrend}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis tickFormatter={(value) => `₹${(value/1000).toFixed(0)}k`} />
+                    <Tooltip formatter={(value) => [`₹${value.toLocaleString()}`, 'Spending']} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="amount" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Savings Goals & Transaction Manager Preview */}
+        <div className="space-y-6">
+          {/* Savings Goals */}
+          <Card className="shadow-card border-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <PiggyBank className="w-5 h-5 text-primary" />
+                Savings Goals
+              </CardTitle>
+              <CardDescription>Track your progress towards financial goals</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {savingsGoals.map((goal) => {
+                const percentage = (goal.current / goal.target) * 100;
+                const remaining = goal.target - goal.current;
+                const monthsToDeadline = Math.max(0, Math.ceil((new Date(goal.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24 * 30)));
+                const monthlySavingsNeeded = monthsToDeadline > 0 ? remaining / monthsToDeadline : 0;
+                
+                return (
+                  <div key={goal.id} className="space-y-3 p-4 border rounded-lg hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg ${goal.color} flex items-center justify-center`}>
+                          <goal.icon className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{goal.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Due: {new Date(goal.deadline).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge 
+                          variant={goal.priority === 'high' ? 'destructive' : goal.priority === 'medium' ? 'default' : 'secondary'}
+                          className="mb-1"
+                        >
+                          {goal.priority}
+                        </Badge>
+                        <p className="text-sm font-bold text-primary">{percentage.toFixed(0)}%</p>
+                      </div>
+                    </div>
+                    
+                    <Progress value={percentage} className="h-3" />
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-muted-foreground">Saved</p>
+                        <p className="font-semibold">₹{goal.current.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Target</p>
+                        <p className="font-semibold">₹{goal.target.toLocaleString()}</p>
+                      </div>
+                    </div>
+                    
+                    {goal.description && (
+                      <p className="text-xs text-muted-foreground italic">
+                        {goal.description}
+                      </p>
+                    )}
+                    
+                    {monthsToDeadline > 0 && (
+                      <div className="bg-blue-50 p-3 rounded-lg">
+                        <p className="text-xs text-blue-700">
+                          <strong>Monthly savings needed:</strong> ₹{monthlySavingsNeeded.toLocaleString()} 
+                          ({monthsToDeadline} months remaining)
+                        </p>
+                      </div>
+                    )}
+
+                    {/* AI Recommendation for this goal */}
+                    {(() => {
+                      const recommendation = getGoalSpecificRecommendation(goal);
+                      return (
+                        <div className={`p-3 rounded-lg ${
+                          recommendation.type === 'save' ? 'bg-green-50 border border-green-200' :
+                          recommendation.type === 'loan' ? 'bg-orange-50 border border-orange-200' :
+                          recommendation.type === 'alert' ? 'bg-red-50 border border-red-200' :
+                          'bg-blue-50 border border-blue-200'
+                        }`}>
+                          <div className="flex items-start gap-2">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                              recommendation.type === 'save' ? 'bg-green-500' :
+                              recommendation.type === 'loan' ? 'bg-orange-500' :
+                              recommendation.type === 'alert' ? 'bg-red-500' :
+                              'bg-blue-500'
+                            }`}>
+                              {recommendation.type === 'save' ? (
+                                <PiggyBank className="w-3 h-3 text-white" />
+                              ) : recommendation.type === 'loan' ? (
+                                <CreditCard className="w-3 h-3 text-white" />
+                              ) : recommendation.type === 'alert' ? (
+                                <AlertTriangle className="w-3 h-3 text-white" />
+                              ) : (
+                                <Target className="w-3 h-3 text-white" />
+                              )}
+                            </div>
+                            <div className="flex-1">
+                              <p className={`text-xs font-medium ${
+                                recommendation.type === 'save' ? 'text-green-700' :
+                                recommendation.type === 'loan' ? 'text-orange-700' :
+                                recommendation.type === 'alert' ? 'text-red-700' :
+                                'text-blue-700'
+                              }`}>
+                                AI Recommendation: {recommendation.message}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {recommendation.reason}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          {/* Transaction Manager Preview */}
+          <Card className="shadow-card border-0">
+            <CardHeader>
+              <CardTitle>Transactions</CardTitle>
+              <CardDescription>Manage your income and expenses</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground mb-4">
+                Track and manage all your financial transactions in one place.
+              </p>
+              <Button className="w-full" onClick={() => navigate("/transactions")}>
+                View Transactions
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Spending Trend Chart */}
-      <Card className="shadow-card border-0">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 mobile-subtitle">
-            <TrendingDown className="w-5 h-5 text-primary" />
-            Spending Trend
-          </CardTitle>
-          <CardDescription className="mobile-caption">Your monthly spending pattern over the last 6 months</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-48 sm:h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={spendingTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis tickFormatter={(value) => `₹${(value/1000).toFixed(0)}k`} />
-                <Tooltip formatter={(value) => [`₹${value.toLocaleString()}`, 'Spending']} />
-                <Line 
-                  type="monotone" 
-                  dataKey="amount" 
-                  stroke="hsl(var(--primary))" 
-                  strokeWidth={2}
-                  dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Transaction Manager */}
-      <TransactionManager />
       <Toaster />
     </div>
   );

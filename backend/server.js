@@ -6,13 +6,13 @@ const morgan = require('morgan');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(helmet());
 app.use(morgan('combined'));
 app.use(cors({
-  origin: ['http://localhost:8080', 'http://localhost:5173', process.env.FRONTEND_URL],
+  origin: ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:5001', process.env.FRONTEND_URL],
   credentials: true
 }));
 app.use(express.json());
@@ -30,6 +30,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dhan-sart
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/transactions', require('./routes/transactions'));
 app.use('/api/loans', require('./routes/loans'));
+app.use('/api/goals', require('./routes/goals'));
+app.use('/api/budgets', require('./routes/budgets'));
 
 // Root API route
 app.get('/api', (req, res) => {
@@ -41,6 +43,8 @@ app.get('/api', (req, res) => {
       auth: '/api/auth',
       transactions: '/api/transactions',
       loans: '/api/loans',
+      goals: '/api/goals',
+      budgets: '/api/budgets',
       health: '/api/health'
     },
     timestamp: new Date().toISOString()
@@ -74,4 +78,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 API available at http://localhost:${PORT}/api`);
   console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth`);
+  console.log(`💰 Budget endpoints: http://localhost:${PORT}/api/budgets`);
 });
