@@ -14,7 +14,9 @@ import {
   GraduationCap,
   AlertTriangle,
   CheckCircle2,
-  ExternalLink
+  ExternalLink,
+  Lightbulb,
+  Calendar
 } from "lucide-react";
 
 const TaxTips = () => {
@@ -151,12 +153,12 @@ const TaxTips = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Tax-Saving Tips</h1>
-          <p className="text-muted-foreground">Maximize your tax savings with smart investment choices</p>
+          <h1 className="text-2xl sm:text-3xl font-bold">Tax-Saving Tips</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Maximize your tax savings with smart investment choices</p>
         </div>
-        <Badge variant="outline" className="text-sm">
+        <Badge variant="outline" className="text-sm self-start sm:self-auto">
           FY {currentFinancialYear}
         </Badge>
       </div>
@@ -164,7 +166,7 @@ const TaxTips = () => {
       {/* Disclaimer */}
       <Alert className="border-warning/20 bg-warning/5">
         <AlertTriangle className="h-4 w-4 text-warning" />
-        <AlertDescription>
+        <AlertDescription className="text-xs sm:text-sm">
           <strong>Disclaimer:</strong> These tips are for guidance only and not financial advice. 
           Consult a tax professional for personalized recommendations.
         </AlertDescription>
@@ -175,184 +177,239 @@ const TaxTips = () => {
         <div className="lg:col-span-2 space-y-6">
           {/* Tax Overview */}
           <Card className="shadow-card border-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+            <CardHeader className="pb-4 sm:pb-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <Calculator className="w-5 h-5 text-primary" />
                 Your Tax Overview
               </CardTitle>
-              <CardDescription>Current year tax calculation and potential savings</CardDescription>
+              <CardDescription className="text-sm">
+                Current year tax calculation and potential savings
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Gross Income</span>
-                    <span className="font-medium">₹{taxCalculation.grossIncome.toLocaleString()}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Gross Income</span>
+                    <span className="font-medium text-sm sm:text-base">₹{taxCalculation.grossIncome.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Standard Deduction</span>
-                    <span className="font-medium text-success">-₹{taxCalculation.standardDeduction.toLocaleString()}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Standard Deduction</span>
+                    <span className="font-medium text-success text-sm sm:text-base">-₹{taxCalculation.standardDeduction.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Section 80C Used</span>
-                    <span className="font-medium text-success">-₹{taxCalculation.section80C.toLocaleString()}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Section 80C Used</span>
+                    <span className="font-medium text-success text-sm sm:text-base">-₹{taxCalculation.section80C.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Section 80D Used</span>
-                    <span className="font-medium text-success">-₹{taxCalculation.section80D.toLocaleString()}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Section 80D</span>
+                    <span className="font-medium text-success text-sm sm:text-base">-₹{taxCalculation.section80D.toLocaleString()}</span>
                   </div>
-                  <hr className="border-border" />
-                  <div className="flex justify-between font-medium">
-                    <span>Taxable Income</span>
-                    <span>₹{taxCalculation.taxableIncome.toLocaleString()}</span>
+                  <div className="border-t pt-2">
+                    <div className="flex justify-between font-semibold">
+                      <span className="text-xs sm:text-sm">Taxable Income</span>
+                      <span className="text-sm sm:text-base">₹{taxCalculation.taxableIncome.toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
-
+                
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Current Tax Liability</span>
-                    <span className="font-medium text-danger">₹{Math.round(taxCalculation.taxLiability).toLocaleString()}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">Tax Liability</span>
+                    <span className="font-medium text-sm sm:text-base">₹{Math.round(taxCalculation.taxLiability).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">Potential Savings</span>
-                    <span className="font-medium text-success">₹{Math.round(taxCalculation.potentialSavings).toLocaleString()}</span>
+                    <span className="text-xs sm:text-sm text-muted-foreground">If you utilize remaining 80C</span>
+                    <span className="font-medium text-success text-sm sm:text-base">₹{Math.round(potentialTaxLiability).toLocaleString()}</span>
                   </div>
-                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-                    <p className="text-sm font-medium text-primary mb-1">Action Required</p>
-                    <p className="text-xs text-muted-foreground">
-                      Invest ₹{section80CRemaining.toLocaleString()} more in 80C to save ₹{Math.round(taxCalculation.potentialSavings).toLocaleString()} in taxes
-                    </p>
+                  <div className="border-t pt-2">
+                    <div className="flex justify-between font-semibold">
+                      <span className="text-xs sm:text-sm">Potential Savings</span>
+                      <span className="text-success text-sm sm:text-base">₹{Math.round(taxCalculation.potentialSavings).toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
+          {/* Unused Tax Saving Limits */}
+          <Card className="shadow-card border-0">
+            <CardHeader className="pb-4 sm:pb-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Shield className="w-5 h-5 text-primary" />
+                Unused Tax Saving Limits
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Maximize your tax savings by utilizing these opportunities
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span className="text-sm font-medium">Section 80C</span>
+                    <span className="text-sm text-muted-foreground">
+                      ₹{section80CUsed.toLocaleString()} / ₹{section80CLimit.toLocaleString()}
+                    </span>
+                  </div>
+                  <Progress value={(section80CUsed / section80CLimit) * 100} className="h-2" />
+                  <div className="flex justify-between mt-1">
+                    <span className="text-xs text-muted-foreground">₹{section80CRemaining.toLocaleString()} remaining</span>
+                    <span className="text-xs text-muted-foreground">{Math.round((section80CUsed / section80CLimit) * 100)}% used</span>
+                  </div>
+                </div>
+              </div>
+              
+              <Alert className="border-primary/20 bg-primary/5">
+                <Lightbulb className="h-4 w-4 text-primary" />
+                <AlertDescription className="text-xs sm:text-sm">
+                  <strong>Tip:</strong> You can save ₹{Math.round(taxCalculation.potentialSavings).toLocaleString()} 
+                  {" "}in taxes by investing the remaining ₹{section80CRemaining.toLocaleString()} in eligible 80C instruments.
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
 
           {/* Tax Saving Options */}
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Recommended Tax-Saving Investments</h3>
-            <div className="grid gap-4">
-              {taxSavingOptions.filter(option => option.recommended).map((option) => (
-                <Card key={option.id} className="shadow-card border-0">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg ${option.color} flex items-center justify-center`}>
-                          <option.icon className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-semibold">{option.name}</h4>
-                            <Badge variant="outline" className="text-xs">
+          <Card className="shadow-card border-0">
+            <CardHeader className="pb-4 sm:pb-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <FileText className="w-5 h-5 text-primary" />
+                Tax Saving Options
+              </CardTitle>
+              <CardDescription className="text-sm">
+                Explore investment options to maximize your tax savings
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {taxSavingOptions.map((option) => {
+                  const Icon = option.icon;
+                  return (
+                    <div key={option.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-8 h-8 rounded-full ${option.color} flex items-center justify-center`}>
+                            <Icon className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-sm sm:text-base">{option.name}</h3>
+                            <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
                               {option.category}
                             </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1">{option.description}</p>
+                        </div>
+                        {option.recommended && (
+                          <CheckCircle2 className="w-4 h-4 text-success" />
+                        )}
+                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-3">
+                        {option.description}
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-muted-foreground">Min:</span>
+                          <span className="ml-1">₹{option.minInvestment.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Lock-in:</span>
+                          <span className="ml-1">{option.lockInPeriod}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Returns:</span>
+                          <span className="ml-1">{option.expectedReturns}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Risk:</span>
+                          <span className="ml-1">{option.riskLevel}</span>
                         </div>
                       </div>
-                      {option.recommended && (
-                        <Badge variant="default" className="bg-success text-success-foreground">
-                          Recommended
-                        </Badge>
-                      )}
                     </div>
-
-                    <div className="grid md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Min Investment</p>
-                        <p className="font-medium">₹{option.minInvestment}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Lock-in Period</p>
-                        <p className="font-medium">{option.lockInPeriod}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Returns</p>
-                        <p className="font-medium">{option.expectedReturns}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">Risk Level</p>
-                        <Badge variant={
-                          option.riskLevel === "Low" ? "secondary" :
-                          option.riskLevel === "Medium" ? "outline" : "destructive"
-                        } className="text-xs">
-                          {option.riskLevel}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {/* <div className="flex gap-2 mt-4">
-                      <Button variant="hero" size="sm">
-                        Invest Now
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        Learn More
-                        <ExternalLink className="w-3 h-3 ml-1" />
-                      </Button>
-                    </div>
-                     */}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Right Column - Quick Tips & Other Options */}
+        {/* Right Column - Quick Tips */}
         <div className="space-y-6">
-          {/* Quick Tax Tips */}
+          {/* Quick Tips */}
           <Card className="shadow-card border-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary" />
+            <CardHeader className="pb-4 sm:pb-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Lightbulb className="w-5 h-5 text-primary" />
                 Quick Tips
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="p-3 rounded-lg bg-success/5 border border-success/20">
-                <p className="text-sm font-medium text-success mb-1">Deadline Reminder</p>
-                <p className="text-xs text-muted-foreground">
-                  Section 80C investments must be completed by March 31st
-                </p>
-              </div>
-              
-              <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
-                <p className="text-sm font-medium text-primary mb-1">ELSS vs PPF</p>
-                <p className="text-xs text-muted-foreground">
-                  ELSS offers higher returns but comes with market risk
-                </p>
-              </div>
-
-            </CardContent>
-          </Card>
-
-          {/* Other Tax Saving Options */}
-          <Card className="shadow-card border-0">
-            <CardHeader>
-              <CardTitle>Other Options</CardTitle>
-              <CardDescription>Additional tax-saving instruments</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {taxSavingOptions.filter(option => !option.recommended).map((option) => (
-                <div key={option.id} className="flex items-center justify-between p-3 rounded-lg bg-surface/50 border">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg ${option.color} flex items-center justify-center`}>
-                      <option.icon className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{option.name}</p>
-                      <p className="text-xs text-muted-foreground">{option.expectedReturns}</p>
-                    </div>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-primary text-xs font-bold">1</span>
                   </div>
-                  <Badge variant="outline" className="text-xs">
-                    {option.category}
-                  </Badge>
+                  <p className="text-xs sm:text-sm">
+                    File your ITR before the due date to avoid penalties and interest.
+                  </p>
                 </div>
-              ))}
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-primary text-xs font-bold">2</span>
+                  </div>
+                  <p className="text-xs sm:text-sm">
+                    Keep all investment proofs and receipts for easy tax filing.
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-primary text-xs font-bold">3</span>
+                  </div>
+                  <p className="text-xs sm:text-sm">
+                    Consider indexation benefits for long-term investments to reduce tax liability.
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-primary text-xs font-bold">4</span>
+                  </div>
+                  <p className="text-xs sm:text-sm">
+                    Take advantage of HRA exemption if you're paying rent.
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
+          {/* Important Deadlines */}
+          <Card className="shadow-card border-0">
+            <CardHeader className="pb-4 sm:pb-6">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Calendar className="w-5 h-5 text-primary" />
+                Important Deadlines
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-xs sm:text-sm">FY 2023-24 Ends</span>
+                  <span className="text-xs sm:text-sm font-medium">March 31, 2024</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-xs sm:text-sm">ITR Filing Due</span>
+                  <span className="text-xs sm:text-sm font-medium">July 31, 2024</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-xs sm:text-sm">Advance Tax (Q1)</span>
+                  <span className="text-xs sm:text-sm font-medium">June 15, 2024</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-xs sm:text-sm">Advance Tax (Q2)</span>
+                  <span className="text-xs sm:text-sm font-medium">September 15, 2024</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

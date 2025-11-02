@@ -508,7 +508,7 @@ const ExpenseCalendar = () => {
                 )}
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
                   <Target className="w-5 h-5 text-primary" />
@@ -549,7 +549,7 @@ const ExpenseCalendar = () => {
                   </div>
                 ))}
                 <div className="flex flex-col sm:flex-row gap-2 justify-end pt-4">
-                  <Button variant="outline" onClick={() => setShowSetBudget(false)} className="w-full sm:w-auto">
+                  <Button variant="outline" onClick={() => setShowSetBudget(false)} className="w-full sm:w-auto text-sm">
                     Cancel
                   </Button>
                   <Button 
@@ -574,7 +574,7 @@ const ExpenseCalendar = () => {
                         toast.error("Failed to save budget");
                       }
                     }}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto text-sm"
                   >
                     Save Budget
                   </Button>
@@ -586,12 +586,12 @@ const ExpenseCalendar = () => {
           {/* Existing Add Expense Button */}
           <Dialog open={showAddExpense} onOpenChange={setShowAddExpense}>
             <DialogTrigger asChild>
-              <Button variant="hero" className="gap-2">
+              <Button variant="hero" className="gap-2" size="sm">
                 <Plus className="w-4 h-4" />
-                Add Expense
+                <span className="hidden xs:inline">Add Expense</span>
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6">
               <DialogHeader>
                 <DialogTitle className="text-lg sm:text-xl">Add New Expense</DialogTitle>
                 <DialogDescription className="text-sm">Record a new expense for the selected date</DialogDescription>
@@ -617,7 +617,7 @@ const ExpenseCalendar = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {Object.entries(categoryIcons).map(([key, { label }]) => (
-                          <SelectItem key={key} value={key}>{label}</SelectItem>
+                          <SelectItem key={key} value={key} className="text-sm">{label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -657,14 +657,14 @@ const ExpenseCalendar = () => {
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 justify-end">
-                  <Button variant="outline" onClick={() => setShowAddExpense(false)} className="w-full sm:w-auto">
+                  <Button variant="outline" onClick={() => setShowAddExpense(false)} className="w-full sm:w-auto text-sm">
                     Cancel
                   </Button>
                   <Button 
                     variant="hero" 
                     onClick={handleAddTransaction}
                     disabled={!formData.amount || !formData.category || !formData.description}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto text-sm"
                   >
                     Add Expense
                   </Button>
@@ -679,7 +679,7 @@ const ExpenseCalendar = () => {
         {/* Calendar - Takes full width on mobile, 3 columns on large screens */}
         <div className="lg:col-span-3">
           <Card className="shadow-card border-0">
-            <CardHeader>
+            <CardHeader className="pb-4 sm:pb-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
                   <CalendarIcon className="w-5 h-5 text-primary" />
@@ -726,7 +726,7 @@ const ExpenseCalendar = () => {
                   return (
                     <div
                       key={index}
-                      className={`p-2 h-[80px] sm:h-[80px] border rounded-lg cursor-pointer transition-all hover:shadow-md flex flex-col ${
+                      className={`p-2 h-[70px] sm:h-[80px] border rounded-lg cursor-pointer transition-all hover:shadow-md flex flex-col ${
                         isSelected ? 'border-primary bg-primary/5' : 
                         isToday ? 'border-primary bg-primary/10' : 
                         hasExpenses ? 'border-border bg-surface/50' : 'border-border'
@@ -779,7 +779,7 @@ const ExpenseCalendar = () => {
           {/* Selected Date Details */}
           {selectedDate && (
             <Card className="shadow-card border-0">
-              <CardHeader>
+              <CardHeader className="pb-4 sm:pb-6">
                 <CardTitle className="text-lg">
                   {selectedDate.toLocaleDateString('en-US', { 
                     weekday: 'long', 
@@ -861,7 +861,7 @@ const ExpenseCalendar = () => {
 
       {/* Edit Transaction Dialog */}
       <Dialog open={showEditExpense} onOpenChange={setShowEditExpense}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-lg sm:text-xl">Edit Expense</DialogTitle>
             <DialogDescription className="text-sm">Update the expense details</DialogDescription>
@@ -887,7 +887,7 @@ const ExpenseCalendar = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {Object.entries(categoryIcons).map(([key, { label }]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                      <SelectItem key={key} value={key} className="text-sm">{label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -927,14 +927,14 @@ const ExpenseCalendar = () => {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowEditExpense(false)} className="w-full sm:w-auto">
+              <Button variant="outline" onClick={() => setShowEditExpense(false)} className="w-full sm:w-auto text-sm">
                 Cancel
               </Button>
               <Button 
                 variant="hero" 
                 onClick={handleEditTransaction}
                 disabled={!formData.amount || !formData.category || !formData.description}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto text-sm"
               >
                 Update Expense
               </Button>
@@ -945,7 +945,7 @@ const ExpenseCalendar = () => {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
               <AlertCircle className="w-5 h-5 text-destructive" />
@@ -976,13 +976,13 @@ const ExpenseCalendar = () => {
               </Alert>
             )}
             <div className="flex flex-col sm:flex-row gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowDeleteConfirm(false)} className="w-full sm:w-auto">
+              <Button variant="outline" onClick={() => setShowDeleteConfirm(false)} className="w-full sm:w-auto text-sm">
                 Cancel
               </Button>
               <Button 
                 variant="destructive" 
                 onClick={handleDeleteTransaction}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto text-sm"
               >
                 Delete Expense
               </Button>
