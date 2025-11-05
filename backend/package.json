@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "build": "cd .. && npm run build && cd backend && mkdir -p dist && cp -r ../dist/* dist/",
-    "build:windows": "cd .. && npm run build && cd backend && if not exist dist mkdir dist && xcopy /E /I /Y ..\\dist dist",
+    "build-frontend": "cd .. && npm run build && cd backend && mkdir -p dist && cp -r ../dist/* dist/",
+    "build-frontend:windows": "cd .. && npm run build && cd backend && if not exist dist mkdir dist && xcopy /E /I /Y ..\\dist dist",
     "serve": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

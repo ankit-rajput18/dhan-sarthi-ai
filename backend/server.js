@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -32,6 +33,16 @@ app.use('/api/transactions', require('./routes/transactions'));
 app.use('/api/loans', require('./routes/loans'));
 app.use('/api/goals', require('./routes/goals'));
 app.use('/api/budgets', require('./routes/budgets'));
+
+// Serve frontend static files in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'dist')));
+  
+  // Handle React routing, return all requests to React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+}
 
 // Root API route
 app.get('/api', (req, res) => {
@@ -69,9 +80,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+// 404 handler for API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ message: 'API route not found' });
 });
 
 app.listen(PORT, () => {

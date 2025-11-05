@@ -4,31 +4,12 @@
 # 2. Backend (Node.js) - serves the API
 
 services:
-  # Frontend service
+  # Single service deployment (frontend served by backend)
   - type: web
-    name: dhan-sarthi-frontend
-    env: static
-    buildCommand: npm run build
-    staticPublishPath: dist
-    envVars:
-      - key: VITE_API_URL
-        value: https://dhan-sarthi-backend.onrender.com/api
-    headers:
-      - path: /*
-        name: X-Frame-Options
-        value: DENY
-      - path: /*
-        name: X-Content-Type-Options
-        value: nosniff
-
-  # Backend service
-  - type: web
-    name: dhan-sarthi-backend
+    name: dhan-sarthi-app
     env: node
-    plan: free
-    buildCommand: npm install
-    startCommand: npm start
-    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -37,6 +18,4 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: FRONTEND_URL
-        value: https://dhan-sarthi-frontend.onrender.com
-      - key: PORT
-        value: 10000
+        value: https://YOUR_RENDER_APP_NAME.onrender.com
