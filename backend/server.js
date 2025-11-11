@@ -8,13 +8,38 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Configure CORS to allow multiple origins
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'http://localhost:8080',
+      'http://localhost:5173',
+      'http://localhost:5001',
+      process.env.FRONTEND_URL,
+      process.env.VERCEL_URL, // For Vercel deployments
+      'https://your-vercel-app.vercel.app' // Replace with your actual Vercel URL
+    ].filter(Boolean); // Remove any undefined values
+    
+    // Check if the origin is in our allowed list or is undefined (for server-to-server requests)
+    if (!origin || allowedOrigins.includes(origin) || 
+        allowedOrigins.some(allowedOrigin => 
+          allowedOrigin && origin.startsWith(allowedOrigin.replace(/\/$/, '')))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+};
+
 // Middleware
 app.use(helmet());
 app.use(morgan('combined'));
-app.use(cors({
-  origin: ['http://localhost:8080', 'http://localhost:5173', 'http://localhost:5001', process.env.FRONTEND_URL],
-  credentials: true
-}));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -63,6 +88,12 @@ app.get('/api/health', (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
+  if (err.message === 'Not allowed by CORS') {
+    return res.status(403).json({ 
+      message: 'CORS error: Origin not allowed',
+      error: 'Not allowed by CORS'
+    });
+  }
   res.status(500).json({ 
     message: 'Something went wrong!',
     error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
@@ -74,7 +105,7 @@ app.use('*', (req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 API available at http://localhost:${PORT}/api`);
   console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth`);
