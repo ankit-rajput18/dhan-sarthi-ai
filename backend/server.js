@@ -20,14 +20,16 @@ const corsOptions = {
       'http://localhost:5173',
       'http://localhost:5001',
       process.env.FRONTEND_URL,
-      process.env.VERCEL_URL, // For Vercel deployments
-      'https://your-vercel-app.vercel.app' // Replace with your actual Vercel URL
+      process.env.VERCEL_URL
     ].filter(Boolean); // Remove any undefined values
     
-    // Check if the origin is in our allowed list or is undefined (for server-to-server requests)
-    if (!origin || allowedOrigins.includes(origin) || 
-        allowedOrigins.some(allowedOrigin => 
-          allowedOrigin && origin.startsWith(allowedOrigin.replace(/\/$/, '')))) {
+    // Always allow vercel.app domains
+    if (origin && origin.includes('.vercel.app')) {
+      return callback(null, true);
+    }
+    
+    // Check if the origin is in our allowed list
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
