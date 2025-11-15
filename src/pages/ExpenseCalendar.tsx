@@ -143,7 +143,7 @@ const ExpenseCalendar = () => {
 
   // Debug function to log amounts
   const debugDayTotal = (date: Date, total: number) => {
-    console.log(`Date: ${date.toDateString()}, Total: ${total}, Formatted: ${formatCompactAmount(total)}`);
+    // console.log(`Date: ${date.toDateString()}, Total: ${total}, Formatted: ${formatCompactAmount(total)}`);
     return total;
   };
 

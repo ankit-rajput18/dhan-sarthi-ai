@@ -23,7 +23,7 @@ const Login = () => {
 
     try {
       const data = await loginUser(email, password);
-      console.log("Login success:", data);
+      // console.log("Login success:", data);
       // Redirect after login
       navigate(from, { replace: true });
     } catch (err: any) {
