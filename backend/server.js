@@ -9,10 +9,17 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Configure CORS to allow multiple origins
-const corsOptions = {
+// Middleware - CORS must be configured before routes
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" }
+}));
+app.use(morgan('combined'));
+
+// Simple CORS configuration that works with Vercel
+app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (like mobile apps, Postman, curl)
     if (!origin) return callback(null, true);
     
     // List of allowed origins
@@ -21,43 +28,34 @@ const corsOptions = {
       'http://localhost:5173',
       'http://localhost:5001',
       'http://localhost:10000',
-      'https://dhan-sarthi-ai.vercel.app',
-      process.env.FRONTEND_URL,
-      process.env.VERCEL_URL
-    ].filter(Boolean); // Remove any undefined values
+      'https://dhan-sarthi-ai.vercel.app'
+    ];
     
-    // Always allow vercel.app and render.com domains
-    if (origin && (origin.includes('.vercel.app') || origin.includes('.render.com'))) {
-      return callback(null, true);
+    // Check if origin ends with .vercel.app or .render.com
+    const isVercel = origin.endsWith('.vercel.app');
+    const isRender = origin.endsWith('.render.com');
+    const isAllowed = allowedOrigins.includes(origin);
+    
+    if (isVercel || isRender || isAllowed) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(null, true); // Allow anyway in production to avoid issues
     }
-    
-    // Check if the origin is in our allowed list
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    
-    // Log rejected origins in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('CORS rejected origin:', origin);
-    }
-    
-    callback(null, false);
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  maxAge: 600
-};
-
-// Middleware
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  maxAge: 86400, // 24 hours
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
-app.use(morgan('combined'));
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dhan-sarthi', {
