@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+=======
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001/api";
+>>>>>>> d1d435ae1cfb4f6a05fef8ed08fbde8d2fca8f69
 
 // Get auth token
 const getAuthToken = () => {
