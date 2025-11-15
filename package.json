@@ -6,8 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postbuild": "cd backend && mkdir -p dist && cp -r ../dist/* dist/",
-    "postbuild:windows": "cd backend && if not exist dist mkdir dist && xcopy /E /I /Y ..\\dist dist",
     "lint": "eslint .",
     "preview": "vite preview"
   },
