@@ -560,6 +560,12 @@ router.get('/upcoming-emis', [
   query('days').optional().isInt({ min: 1, max: 365 }).withMessage('Days must be between 1 and 365')
 ], async (req, res) => {
   try {
+    // Validate request
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
     const { days = 30 } = req.query;
     const userId = req.user._id;
     const today = new Date();
@@ -574,23 +580,27 @@ router.get('/upcoming-emis', [
 
     const upcomingEmis = loans.map(loan => ({
       loanId: loan._id,
-      loanName: loan.loanName,
+      loanName: loan.loanName || 'Unnamed Loan',
       loanType: loan.loanType,
       lender: loan.lender,
       nextEmiDate: loan.nextEmiDate,
-      nextEmiAmount: loan.nextEmiAmount,
+      nextEmiAmount: loan.nextEmiAmount || 0,
       daysUntilDue: Math.ceil((loan.nextEmiDate - today) / (1000 * 60 * 60 * 24)),
-      remainingBalance: loan.remainingBalance
+      remainingBalance: loan.remainingBalance || 0
     }));
 
     res.json({
       upcomingEmis,
-      totalAmount: upcomingEmis.reduce((sum, emi) => sum + emi.nextEmiAmount, 0)
+      totalAmount: upcomingEmis.reduce((sum, emi) => sum + (emi.nextEmiAmount || 0), 0)
     });
 
   } catch (error) {
     console.error('Get upcoming EMIs error:', error);
-    res.status(500).json({ message: 'Server error while fetching upcoming EMIs' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Server error while fetching upcoming EMIs',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
