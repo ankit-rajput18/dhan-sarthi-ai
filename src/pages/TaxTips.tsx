@@ -339,6 +339,37 @@ const TaxTips = () => {
         </AlertDescription>
       </Alert>
 
+       {/* Tax Overview */}
+      <div className="grid md:grid-cols-3 gap-4">
+        <Card className="shadow-card border-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Gross Income</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">₹{taxData?.grossIncome?.toLocaleString('en-IN')}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card border-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Tax Liability</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-red-600">₹{taxData?.taxLiability?.toLocaleString('en-IN')}</p>
+            <p className="text-xs text-muted-foreground mt-1">{taxData?.regime === 'new' ? 'New Regime' : 'Old Regime'}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-card border-0">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Deductions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold text-success">₹{taxData?.totalDeductions?.toLocaleString('en-IN')}</p>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* AI Recommendation */}
       <Card className="shadow-card border-0 bg-gradient-to-r from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950 dark:via-pink-950 dark:to-orange-950 border-2 border-purple-200 dark:border-purple-800">
         <CardHeader>
@@ -430,6 +461,8 @@ const TaxTips = () => {
           )}
         </CardContent>
       </Card>
+      
+      
 
       {/* Regime Comparison */}
       {oldRegime && newRegime && (
@@ -478,36 +511,7 @@ const TaxTips = () => {
         </Card>
       )}
 
-      {/* Tax Overview */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card className="shadow-card border-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Gross Income</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">₹{taxData?.grossIncome?.toLocaleString('en-IN')}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card border-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Tax Liability</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-red-600">₹{taxData?.taxLiability?.toLocaleString('en-IN')}</p>
-            <p className="text-xs text-muted-foreground mt-1">{taxData?.regime === 'new' ? 'New Regime' : 'Old Regime'}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-card border-0">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Deductions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-success">₹{taxData?.totalDeductions?.toLocaleString('en-IN')}</p>
-          </CardContent>
-        </Card>
-      </div>
+     
 
       {/* Deduction Breakdown (Old Regime Only) */}
       {taxData?.regime === 'old' && taxData?.deductionBreakdown && (
@@ -538,56 +542,7 @@ const TaxTips = () => {
         </Card>
       )}
 
-      {/* Personalized Tips */}
-      <Card className="shadow-card border-0">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-primary" />
-            Personalized Recommendations
-          </CardTitle>
-          <CardDescription>
-            {tips.length} tip{tips.length !== 1 ? 's' : ''} to help you save on taxes
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {tips.map((tip) => {
-              const Icon = getCategoryIcon(tip.category);
-              return (
-                <div key={tip.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-3">
-                    <div className={`w-10 h-10 rounded-full ${getPriorityColor(tip.priority)} flex items-center justify-center flex-shrink-0`}>
-                      <Icon className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="font-semibold">{tip.title}</h3>
-                        {tip.potentialSaving > 0 && (
-                          <Badge variant="secondary" className="ml-2">
-                            Save ₹{tip.potentialSaving.toLocaleString('en-IN')}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-2">{tip.description}</p>
-                      {tip.actionRequired && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Target className="w-4 h-4 text-primary" />
-                          <span className="font-medium">{tip.actionRequired}</span>
-                        </div>
-                      )}
-                      {tip.deadline && (
-                        <p className="text-xs text-warning mt-1">
-                          ⏰ Deadline: {new Date(tip.deadline).toLocaleDateString('en-IN')}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+     
 
       
     </div>
