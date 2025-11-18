@@ -49,7 +49,8 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
         return;
       }
 
-      const response = await fetch('http://localhost:5001/api/tax/profile', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${API_BASE_URL}/tax/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -192,7 +193,8 @@ export default function OnboardingModal({ open, onComplete }: OnboardingModalPro
         }
       };
 
-      const response = await fetch('http://localhost:5001/api/tax/profile', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${API_BASE_URL}/tax/profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -30,6 +30,8 @@ export default function NotificationBell() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+
   const fetchNotifications = async () => {
     try {
       setLoading(true);
@@ -38,7 +40,7 @@ export default function NotificationBell() {
         return;
       }
 
-      const response = await fetch('http://localhost:5001/api/notifications?limit=20&includeRead=true', {
+      const response = await fetch(`${API_BASE_URL}/notifications?limit=20&includeRead=true`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -60,7 +62,7 @@ export default function NotificationBell() {
         return;
       }
 
-      const response = await fetch('http://localhost:5001/api/notifications/unread-count', {
+      const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -78,7 +80,7 @@ export default function NotificationBell() {
       const token = localStorage.getItem('ds_auth_token') || localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch(`http://localhost:5001/api/notifications/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -102,7 +104,7 @@ export default function NotificationBell() {
       const notification = notifications.find(n => n._id === id);
       if (notification?.read) return;
 
-      const response = await fetch(`http://localhost:5001/api/notifications/${id}/read`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/${id}/read`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -123,7 +125,7 @@ export default function NotificationBell() {
       const token = localStorage.getItem('ds_auth_token') || localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5001/api/notifications/read-all', {
+      const response = await fetch(`${API_BASE_URL}/notifications/read-all`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` }
       });

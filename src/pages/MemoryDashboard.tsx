@@ -49,7 +49,8 @@ const MemoryDashboard: React.FC = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('ds_auth_token') || localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/memory', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${API_BASE_URL}/memory`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await response.json();
@@ -68,7 +69,8 @@ const MemoryDashboard: React.FC = () => {
     try {
       setUpdating(true);
       const token = localStorage.getItem('ds_auth_token') || localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/memory/update', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${API_BASE_URL}/memory/update`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -90,7 +92,8 @@ const MemoryDashboard: React.FC = () => {
     try {
       setUpdating(true);
       const token = localStorage.getItem('ds_auth_token') || localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/memory/analyze', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${API_BASE_URL}/memory/analyze`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -112,7 +115,8 @@ const MemoryDashboard: React.FC = () => {
     try {
       setUpdating(true);
       const token = localStorage.getItem('ds_auth_token') || localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/memory/insights', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${API_BASE_URL}/memory/insights`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -138,7 +142,8 @@ const MemoryDashboard: React.FC = () => {
     try {
       setUpdating(true);
       const token = localStorage.getItem('ds_auth_token') || localStorage.getItem('token');
-      const response = await fetch('http://localhost:5001/api/memory', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${API_BASE_URL}/memory`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

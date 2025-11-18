@@ -57,7 +57,8 @@ const TaxTips = () => {
       }
       
       // Check if onboarding is completed
-      const profileRes = await fetch('http://localhost:5001/api/tax/profile', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const profileRes = await fetch(`${API_BASE_URL}/tax/profile`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -85,7 +86,7 @@ const TaxTips = () => {
       setProfile(profileData);
 
       // Fetch tax tips
-      const tipsRes = await fetch('http://localhost:5001/api/tax/tips', {
+      const tipsRes = await fetch(`${API_BASE_URL}/tax/tips`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -113,7 +114,8 @@ const TaxTips = () => {
       const token = localStorage.getItem('ds_auth_token') || localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5001/api/tax/ai-recommendation', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${API_BASE_URL}/tax/ai-recommendation`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -132,7 +134,8 @@ const TaxTips = () => {
       const token = localStorage.getItem('ds_auth_token') || localStorage.getItem('token');
       if (!token) return;
 
-      const response = await fetch('http://localhost:5001/api/tax/ai-recommendation/generate', {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${API_BASE_URL}/tax/ai-recommendation/generate`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
       });
